@@ -33,12 +33,20 @@ def runOCR(video_file_name):
             threshold = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
             medianBlur = cv2.medianBlur(gray, 3)
             data = pytesseract.image_to_string(gray)
+            data.split("\n")
 
-            for word in data.split("/w+"):
+            for word in re.split("\s+|\n", data):
                 if not word in text_output:
                     text_output[word] = []
                 print(word)
                 text_output[word].append(frame_id)
+
+            # for line in data.split("\n"):
+            #     for word in line.split(" "):
+            #         if not word in text_output:
+            #             text_output[word] = []
+            #         print(word)
+            #         text_output[word].append(frame_id)
             # cv2.imshow('frame',frame)
             print("frame #", frame_id, data)
             # cv2.imshow('frame', medianBlur)
@@ -86,19 +94,16 @@ def download_hook(d):
         runOCR(output_file_name)
         cleanup(output_file_name)
 
-def groupSequence(x): 
-    it = iter(x) 
-    prev, res = next(it), [] 
+def groupSequence(lst): 
+    res = [[lst[0]]] 
   
-    while prev is not None: 
-        start = next(it, None) 
+    for i in range(1, len(lst)): 
+        if lst[i-1]+1 == lst[i]: 
+            res[-1].append(lst[i]) 
   
-        if prev + 1 == start: 
-            res.append(prev) 
-        elif res: 
-            yield list(res + [prev]) 
-            res = [] 
-        prev = start
+        else: 
+            res.append([lst[i]]) 
+    return res 
 
 def main():
     finished = False;
@@ -122,6 +127,7 @@ def main():
 # ffmpeg -i <input> -filter:v fps=fps=30 <output>
 
 # Test video: https://www.youtube.com/watch?v=5paISomtdn4
+# Hitler reddit: https://www.youtube.com/watch?v=eNW2y6DTwtw
 
 def test():
     runOCR("out.K1Jkrngi0R0.mp4")
