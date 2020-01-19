@@ -52,21 +52,8 @@ def runOCR(video_file_name):
         # Iterate through the frames and determine if they order in sequence, if they do, remove sequence
         good_frames = []
         cur_frame = text_output[word][0]; # First element, eg. frame 104
-        next_predicted = cur_frame + 1; # Next prediction is 104 + 1 = 105
-        start_index = 1
-        try:
-            word.index(start_index);
-            for frame_no in text_output[word]:
-            if frame_no == next_predicted:
-                next_predicted = next_predicted + 1;
-            else:
-                good_frames.append(cur_frame)
-                good_frames.append(frame_no)
-                
-                cur_frame = frame_no
-                next_predicted = cur_frame + 1;
-        except ValueError as e:
-            continue;
+        for group in list(groupSequence(text_output[word])):
+            good_frames.append(group[0])
         
         text_output[word] = good_frames
 
@@ -98,6 +85,20 @@ def download_hook(d):
         output_file_name = changeVideoFPS(file_name, 1);
         runOCR(output_file_name)
         cleanup(output_file_name)
+
+def groupSequence(x): 
+    it = iter(x) 
+    prev, res = next(it), [] 
+  
+    while prev is not None: 
+        start = next(it, None) 
+  
+        if prev + 1 == start: 
+            res.append(prev) 
+        elif res: 
+            yield list(res + [prev]) 
+            res = [] 
+        prev = start
 
 def main():
     finished = False;
